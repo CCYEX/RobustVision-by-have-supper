@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rvkit"
+version = "0.0.1"
+description = "Robustness checkup toolkit for YOLO-family object detectors: condition x corruption degradation reports + confidence calibration"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "ultralytics>=8.3,<9",
+    "albumentations>=1.4,<2",
+    "pandas>=2.0",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "scipy>=1.11",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+rvkit = "rvkit.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rvkit"]

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+
+# 数据与产物：repo 不存原图、标注、权重（见 data/README.md）
+data/raw/
+data/bdd/
+data/splits/*.txt
+*.pt
+*.onnx
+*.parquet
+
+# 本地杂项
+.DS_Store
+Thumbs.db
