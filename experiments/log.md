@@ -22,6 +22,13 @@
 - 条件映射冻结（写进 data_card）：clean_day = clear∩daytime；night = timeofday==night；rain = rainy；
   snow = snowy（val 769 张，可作正式报告条件）；fog = foggy（13 张，仅参考点）；undefined 一律排除在命名条件外
 - housekeeping：.gitignore 增补 data/train|val|test、data/yolo、*.zip；data/README.md 更新布局说明
-- 待办：convert.py / make_splits.py / audit 收尾（交叉表 + M2 抽样 + 框尺寸）+ fixture 测试
+- convert.py 完成（作者：本人；review 通过）：
+  · 实测 val 7.9s / train 57.8s（含 1.45GB json.load，内存无压力）
+  · 产出 labels：val 10,000 + train 69,863（137 无记录图自动跳过）；空 txt 0——本数据集每图至少 1 个有效框
+  · train 每类保留（精确值，以此为准）：person 91,349 / rider 4,517 / car 713,211 / truck 29,971 /
+    bus 11,672 / train 136 / motor 3,002 / bike 7,210 / traffic light 186,117 / traffic sign 239,686；
+    丢弃 lane 528,643 + drivable area 125,723（全部因无 box2d 或不在白名单）
+  · 备注：D2 早上的流式普查在块边界存在 ≤30 的重复计数误差，统计以 convert.py 输出为准
+- 待办：make_splits.py / audit 收尾（交叉表 + M2 抽样 + 框尺寸）+ fixture 测试
 - GPU 累计：0 h / 6 h
 ```
