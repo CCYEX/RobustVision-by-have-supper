@@ -15,7 +15,6 @@ data/test/
 data/raw/
 data/bdd/
 data/yolo/
-data/splits/*.txt
 *.zip
 *.pt
 *.onnx
