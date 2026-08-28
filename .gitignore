@@ -23,3 +23,4 @@ data/yolo/
 # 本地杂项
 .DS_Store
 Thumbs.db
+runs/

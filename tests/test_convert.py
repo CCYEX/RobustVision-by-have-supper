@@ -85,11 +85,11 @@ def test_lane_only_image_writes_empty_txt(tmp_path, monkeypatch):
     ]), encoding="utf-8")
 
     monkeypatch.setattr(convert, "ANNOTATIONS", {"smoke": fake_ann})
-    monkeypatch.setattr(convert, "OUT_DIR", tmp_path / "yolo" / "labels")
+    monkeypatch.setattr(convert, "OUT_DIR", tmp_path)
 
     stats = {"images": 0, "kept": Counter(), "dropped": Counter()}
     convert.convert_split("smoke", fake_ann, stats)
 
-    out = tmp_path / "yolo" / "labels" / "smoke" / "only_lane.txt"
+    out = tmp_path / "smoke" / "labels" / "only_lane.txt"
     assert out.exists()                       # 空图也要产出 txt
     assert out.read_text(encoding="utf-8") == ""   # 且内容为空

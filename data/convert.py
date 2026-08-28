@@ -7,8 +7,9 @@
     data/val/annotations/bdd100k_labels_images_val.json       (~208 MB，10,000 张图)
 
 输出（每个有标注记录的图对应一个 .txt）：
-    data/yolo/labels/train/<图名>.txt
-    data/yolo/labels/val/<图名>.txt
+    data/train/labels/<图名>.txt
+    data/val/labels/<图名>.txt
+    （标签与 images 平级 —— Ultralytics 约定：把图片路径里的 images 换成 labels 找同名 txt）
     每行格式：<类别id> <cx> <cy> <w> <h>   （坐标归一化到 [0,1]，保留 6 位小数）
 
 过滤规则（两条缺一不可）：
@@ -47,7 +48,9 @@ ANNOTATIONS = {
     "train": DATA_ROOT / "train" / "annotations" / "bdd100k_labels_images_train.json",
     "val":   DATA_ROOT / "val"   / "annotations" / "bdd100k_labels_images_val.json",
 }
-OUT_DIR = DATA_ROOT / "yolo" / "labels"
+# 标签根目录：每个 split 的标签写到 <OUT_DIR>/<split>/labels/，与该 split 的 images/ 平级
+# （Ultralytics 约定：把图片路径里的 images 换成 labels 找同名 txt）
+OUT_DIR = DATA_ROOT
 
 # 所有随机操作统一使用该 rng（seed 固定 = 结果可复现；当前脚本暂无随机分支，保留给后续抽样）
 rng = random.Random(42)
@@ -109,7 +112,7 @@ def convert_split(split, in_path, stats):
         records = json.load(f)
     print(f"[{split}] 共 {len(records)} 张图，开始转换 …")
 
-    out_split = OUT_DIR / split
+    out_split = OUT_DIR / split / "labels"
     out_split.mkdir(parents=True, exist_ok=True)
 
     for i, record in enumerate(records, 1):
