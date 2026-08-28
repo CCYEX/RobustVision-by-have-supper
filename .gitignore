@@ -24,3 +24,4 @@ data/yolo/
 .DS_Store
 Thumbs.db
 runs/
+*.part
