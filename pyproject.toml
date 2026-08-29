@@ -11,7 +11,9 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 dependencies = [
     "ultralytics>=8.3,<9",
-    "albumentations>=1.4,<2",
+    # 1.4.24 = corruptions.py 全部算子实测验证的版本（RandomRain / Compose(seed) 等
+    # 都以它为准）；2.0 改参数名，升级前先过 tests/。上限 <1.5 挡住 2.0 大版本。
+    "albumentations>=1.4.24,<1.5",
     "pandas>=2.0",
     "matplotlib>=3.8",
     "seaborn>=0.13",

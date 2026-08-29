@@ -79,15 +79,17 @@ def test_corrupt_one_copies_labels_byte_identical(cname, tmp_path):
     assert (root / "corrupt8" / f"{cname}_s2" / "images" / img_name).exists()
 
 
-def test_corruption_is_deterministic():
+@pytest.mark.parametrize("cname", CORRUPTION_NAMES)
+def test_corruption_is_deterministic(cname):
     """同一张图 + 同一种坏 + 同种子 → 两次结果逐像素相等（可复现铁律）。
 
     线程池里谁先谁后不该改变结果，所以随机性必须只来自 (图名, 坏名) 播种。
+    rain 走 albumentations，这条测试顺便验证 Compose(seed=…) 真的钉死了它。
     """
     img = np.random.default_rng(0).integers(0, 255, (32, 32, 3), dtype=np.uint8)
-    seed = generate_corrupt.name_seed("abc-123.jpg", "gauss_noise")
-    a = apply_corruption(img, "gauss_noise", 2, np.random.default_rng(seed))
-    b = apply_corruption(img, "gauss_noise", 2, np.random.default_rng(seed))
+    seed = generate_corrupt.name_seed("abc-123.jpg", cname)
+    a = apply_corruption(img, cname, 2, np.random.default_rng(seed))
+    b = apply_corruption(img, cname, 2, np.random.default_rng(seed))
     assert np.array_equal(a, b)
 
 

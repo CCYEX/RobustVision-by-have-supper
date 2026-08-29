@@ -24,6 +24,7 @@ import pandas as pd
 
 from rvkit.harness import datasets
 from rvkit.harness.adapter import UltralyticsAdapter
+from rvkit.harness.report import df_to_markdown
 
 # ---- 常量 -------------------------------------------------------------------
 
@@ -51,27 +52,22 @@ def pick_device(requested="auto"):
     return "0" if torch.cuda.is_available() else "cpu"
 
 
-def df_to_markdown(df):
-    """DataFrame → markdown 表格（手写五行，省掉 tabulate 依赖；D7 花活再换）。"""
-    header = "| " + " | ".join(df.columns) + " |"
-    divider = "| " + " | ".join("---" for _ in df.columns) + " |"
-    rows = ["| " + " | ".join(str(v) for v in row) + " |"
-            for row in df.itertuples(index=False)]
-    return "\n".join([header, divider, *rows])
-
-
 def run_checkup(model_weights, splits_dir, mode="bdd8coco", out_stem=None,
                 data_root=DATA_ROOT, n_mini=N_MINI, imgsz=640, device="auto"):
-    """对 splits_dir 下每个条件名单算分，写 csv+md 成绩表，返回那张表（DataFrame）。
+    """对 splits_dir 下每个条件名单算分，写 csv+md 成绩表。
 
-    这是给 runner 自己和将来的 cli 共用的入口；参数含义见 main() 的 argparse。
+    返回 (主表 df, 每类分数长表 df)：主表给报告/日志，长表（condition, cls_id,
+    cls, ap）给 report.py 找"掉最狠的类"。
     """
+    mode = MODE_ALIASES.get(mode, mode)           # labels8 → bdd8coco 等别名归一
+    if mode not in datasets.MODE_CLASS_NAMES:
+        raise ValueError(f"未知口径：{mode}（可选：{list(datasets.MODE_CLASS_NAMES)}）")
     data_root = Path(data_root)
     splits_dir = Path(splits_dir)
     out_stem = Path(out_stem or (RESULTS_DIR / "mini_coco_checkup"))
     device = pick_device(device)
     print(f"模型：{model_weights} | 口径：{mode} | 设备：{device} | "
-          f"迷你规模：每条件前 {n_mini} 张")
+          f"迷你规模：{'完整名单' if not n_mini else f'每条件前 {n_mini} 张'}")
 
     # 第 1 步：迷你名单。n_mini>0 → 每个条件取前 n 张，写到 data/splits/mini/。
     # 固定取前 n（名单本身已打乱），重跑完全可复现；每次重写保证与源名单同步。
@@ -94,8 +90,9 @@ def run_checkup(model_weights, splits_dir, mode="bdd8coco", out_stem=None,
     # 第 2 步：模型只加载一次，六个条件共用（加载要几秒~几十秒，别重复干活）
     adapter = UltralyticsAdapter(model_weights, device=device)
 
-    # 第 3 步：逐条件 生成yaml → 考试 → 记一行
-    rows = []
+    # 第 3 步：逐条件 生成yaml → 考试 → 记一行（主表一行 + 每类分数各一行）
+    class_names = datasets.MODE_CLASS_NAMES[mode]     # id → 类名（每类分数查名字用）
+    rows, perclass_rows, counts = [], [], {}
     for cond, names in lists.items():
         if len(names) < 100:                       # 太少则分数抖，提醒读者别过度解读
             print(f"[提示] {cond} 只有 {len(names)} 张，分数参考价值有限（正常现象）")
@@ -103,6 +100,10 @@ def run_checkup(model_weights, splits_dir, mode="bdd8coco", out_stem=None,
         print(f"[{cond}] {len(names)} 张，开考 …")
         scores = adapter.val(yaml_path, imgsz=imgsz)
         rows.append({"condition": cond, **{k: scores[k] for k in ("map", "map50", "p", "r")}})
+        counts[cond] = len(names)
+        for cls_id, ap in zip(scores["per_class_index"], scores["per_class"]):
+            perclass_rows.append({"condition": cond, "cls_id": cls_id,
+                                  "cls": class_names[cls_id], "ap": round(ap, 4)})
         print(f"[{cond}] mAP50-95={scores['map']:.4f}  mAP50={scores['map50']:.4f}")
 
     # 第 4 步：rel_drop 列。基准 = clean_day 的 map；负数 = 掉分，越负掉得越狠。
@@ -113,20 +114,26 @@ def run_checkup(model_weights, splits_dir, mode="bdd8coco", out_stem=None,
     # 表格里保留合理位数：分数 4 位、掉分 1 位（再多没有信息量）
     df[["map", "map50", "p", "r"]] = df[["map", "map50", "p", "r"]].round(4)
     df["rel_drop"] = df["rel_drop"].round(1)
+    perclass_df = pd.DataFrame(perclass_rows)
+    df.attrs["counts"] = counts                    # 各条件样本数挂在元数据上，报告要用
 
-    # 第 5 步：落盘。csv 给程序（D9 拼主表），md 给人（贴日志/README）。
+    # 第 5 步：落盘。csv 给程序（D9 拼主表），md 给人（贴日志/README）；
+    # 每类分数单独一份（report.py 的"掉最狠的类"就吃它）。
     out_stem.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_stem.with_suffix(".csv"), index=False)
+    perclass_df.to_csv(out_stem.with_name(out_stem.stem + "_perclass.csv"), index=False)
     md = [f"# 迷你成绩表（{Path(model_weights).name} × {mode} 口径，{date.today().isoformat()}）",
           "",
           df_to_markdown(df), "",
-          f"- rel_drop = (该条件map − {BASELINE}map) / {BASELINE}map × 100%，负数 = 掉分",
-          f"- 迷你规模：每条件前 {n_mini} 张；全量口径以云电脑复测为准", ""]
+          f"- rel_drop = (该条件map − {BASELINE}map) / {BASELINE}map × 100%，负数 = 掉分"
+          + ("；完整名单口径" if not n_mini else f"；迷你规模：每条件前 {n_mini} 张"),
+          "- 全量口径以云电脑复测为准", ""]
     out_stem.with_suffix(".md").write_text("\n".join(md), encoding="utf-8")
 
     print(f"\n===== 成绩表 =====\n{df.to_string(index=False)}")
-    print(f"\n完成：{out_stem.with_suffix('.csv')} 与 {out_stem.with_suffix('.md')}")
-    return df
+    print(f"\n完成：{out_stem.with_suffix('.csv')} / {out_stem.with_name(out_stem.stem + '_perclass.csv')} "
+          f"/ {out_stem.with_suffix('.md')}")
+    return df, perclass_df
 
 
 def main():

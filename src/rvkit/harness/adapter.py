@@ -36,11 +36,16 @@ class UltralyticsAdapter:
         """
         r = self.model.val(data=str(yaml_path), imgsz=imgsz, device=self.device,
                            batch=batch, verbose=False)
+        # maps 数组按"模型类别数"取长，没有标准答案的类会被填成总分均值——
+        # 所以每类分数必须按 ap_class_index（真正出现过的类）过滤后才干净。
+        idx = [int(i) for i in r.box.ap_class_index]
+        all_maps = [float(m) for m in r.box.maps]
         return {
             "map": float(r.box.map),          # 总分 mAP50-95（主要看的那个）
             "map50": float(r.box.map50),      # 宽松版：IoU≥0.5 就算对
             "p": float(r.box.mp),             # 精确率：报出来的框有多少是对的
             "r": float(r.box.mr),             # 召回率：该找的找到了多少
-            # 每个类各自的 mAP50-95（按数据集类别 id 顺序；没出现过的类是 NaN）
-            "per_class": [float(x) for x in r.box.maps],
+            # 每个类的 mAP50-95（只含有标注的类；顺序与 per_class_index 一一对应）
+            "per_class": [all_maps[i] for i in idx],
+            "per_class_index": idx,           # 类别 id → 用数据集类别表查名字
         }

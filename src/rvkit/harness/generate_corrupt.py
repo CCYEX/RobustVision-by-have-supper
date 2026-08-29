@@ -98,12 +98,13 @@ def generate(names, cname, severity, workers):
         return list(pool.map(lambda n: corrupt_one(n, cname, severity), names))
 
 
-def self_check(names, severity, data_root):
-    """数量自查：7 种坏 × 4 类目录，每个都应恰好 len(names) 个文件。"""
+def self_check(names, severity, data_root, todo=None):
+    """数量自查：本次生成的每种坏 × 4 类目录，每个都应恰好 len(names) 个文件。"""
     data_root = Path(data_root)
+    todo = todo or CORRUPTION_NAMES
     print("\n===== 产物自查（文件数）=====")
     ok = True
-    for cname in CORRUPTION_NAMES:
+    for cname in todo:
         base = f"{cname}_s{severity}"
         counts = {}
         for root, sub in (("corrupt", ("images", "labels")),
@@ -117,7 +118,7 @@ def self_check(names, severity, data_root):
               f"{'  ✓' if line_ok else '  ✗ 应为 ' + str(len(names))}")
     if not ok:
         raise RuntimeError("产物数量与名单不符，请查看上方 ✗ 行")
-    print(f"✓ 数量自查通过：7 种坏 × {len(names)} 张，四类目录数量全部一致")
+    print(f"✓ 数量自查通过：{len(todo)} 种坏 × {len(names)} 张，四类目录数量全部一致")
 
 
 def main():
@@ -126,23 +127,31 @@ def main():
                         help="名单前 N 张做坏；0 = 全量（默认 300 的迷你版）")
     parser.add_argument("--severity", type=int, choices=[1, 2, 3], default=2,
                         help="强度档位：1 轻 / 2 中（默认）/ 3 重")
+    parser.add_argument("--only", default=None,
+                        help="只生成指定坏法（逗号分隔，如 --only rain,jpeg）；调参后重生成某一种时用")
     parser.add_argument("--workers", type=int, default=WORKERS, help="线程数")
     parser.add_argument("--list", default=str(BASE_LIST), help="底图名单 txt")
     parser.add_argument("--data-root", default=str(DATA_ROOT), help="数据根目录")
     args = parser.parse_args()
 
     from rvkit.harness.datasets import make_mini, read_names   # 复用名单工具
+    from rvkit.harness.corruptions import OPS                  # 算子登记表（校验 --only 用）
+
+    todo = CORRUPTION_NAMES if not args.only else [s.strip() for s in args.only.split(",")]
+    unknown = [c for c in todo if c not in OPS]
+    if unknown:
+        parser.error(f"未知坏法：{unknown}（可选：{CORRUPTION_NAMES}）")
 
     names = read_names(args.list)
     names = make_mini(names, args.n) if args.n else names      # n=0 → 全量
     print(f"名单 {Path(args.list).name}：本次做坏 {len(names)} 张 × "
-          f"{len(CORRUPTION_NAMES)} 种坏，强度 s{args.severity}，{args.workers} 线程")
+          f"{len(todo)} 种坏，强度 s{args.severity}，{args.workers} 线程")
 
-    for cname in CORRUPTION_NAMES:         # 按坏法分组跑：进度按文件夹报，一眼能对上
+    for cname in todo:                     # 按坏法分组跑：进度按文件夹报，一眼能对上
         generate(names, cname, args.severity, args.workers)
         print(f"[{cname}_s{args.severity}] {len(names)} 张完成")
 
-    self_check(names, args.severity, args.data_root)
+    self_check(names, args.severity, args.data_root, todo)
 
 
 if __name__ == "__main__":

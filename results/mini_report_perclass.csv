@@ -1,0 +1,42 @@
+condition,cls_id,cls,ap
+clean_day,0,person,0.2749
+clean_day,1,bike,0.1378
+clean_day,2,car,0.3749
+clean_day,3,motor,0.0965
+clean_day,5,bus,0.3063
+clean_day,7,truck,0.2877
+clean_day,9,traffic light,0.1158
+night,0,person,0.227
+night,1,bike,0.1213
+night,2,car,0.2285
+night,3,motor,0.2307
+night,5,bus,0.1704
+night,7,truck,0.227
+night,9,traffic light,0.0299
+rain,0,person,0.2299
+rain,1,bike,0.1925
+rain,2,car,0.3928
+rain,3,motor,0.1575
+rain,5,bus,0.3419
+rain,7,truck,0.3018
+rain,9,traffic light,0.0862
+snow,0,person,0.3035
+snow,1,bike,0.1592
+snow,2,car,0.3727
+snow,3,motor,0.0976
+snow,5,bus,0.1938
+snow,6,train,0.0
+snow,7,truck,0.2981
+snow,9,traffic light,0.072
+dawn_dusk,0,person,0.2339
+dawn_dusk,1,bike,0.2021
+dawn_dusk,2,car,0.3688
+dawn_dusk,3,motor,0.027
+dawn_dusk,5,bus,0.3168
+dawn_dusk,7,truck,0.2396
+dawn_dusk,9,traffic light,0.077
+fog,0,person,0.1491
+fog,2,car,0.2599
+fog,3,motor,0.0498
+fog,7,truck,0.1993
+fog,9,traffic light,0.0296
