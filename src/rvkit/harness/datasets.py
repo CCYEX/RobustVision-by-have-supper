@@ -145,6 +145,21 @@ def ensure_image_mirror(names, src_dir, mirror_dir):
 
 # ---- 一站式组装 ---------------------------------------------------------------
 
+def resolve_images_subdir(condition, mode, data_root):
+    """返回一个条件该用的图片目录（相对数据根目录的 posix 路径）。
+
+    自然条件（clean_day / night / …）→ val/images 或 val8/images；
+    坏图条件（data/corrupt/<条件名>/ 已生成，如 low_light_s2）
+                     → corrupt/<条件名>/images（10 类）或 corrupt8/<条件名>/images（8 类）。
+    判断方式很朴素：数据目录里存在同名坏图文件夹就是坏图条件，不用改名单格式。
+    """
+    data_root = Path(data_root)
+    if (data_root / "corrupt" / condition).is_dir():
+        root8 = "corrupt8" if mode == "bdd8coco" else "corrupt"
+        return f"{root8}/{condition}/images"
+    return MODE_IMAGE_DIR[mode]
+
+
 def build_eval_yaml(condition, names, mode, data_root):
     """把一个条件的图名列表变成可直接喂给 adapter.val() 的 yaml，返回 yaml 路径。
 
@@ -152,10 +167,11 @@ def build_eval_yaml(condition, names, mode, data_root):
     打开检查——比如「yaml 里第一行图的路径，把 images 换成 labels 看文件在不在」。
     """
     data_root = Path(data_root)
-    images_subdir = MODE_IMAGE_DIR[mode]
+    images_subdir = resolve_images_subdir(condition, mode, data_root)
 
-    # 8 类口径：先把这批图硬链接进 val8/images/，再照常用它拼路径
-    if mode == "bdd8coco":
+    # 8 类口径的自然条件：先把这批图硬链接进 val8/images/，再照常用它拼路径。
+    # 坏图条件不用这一步——generate_corrupt 已经把坏图硬链接进 corrupt8/images 了。
+    if mode == "bdd8coco" and images_subdir == MODE_IMAGE_DIR[mode]:
         ensure_image_mirror(names, data_root / "val" / "images",
                             data_root / "val8" / "images")
 
