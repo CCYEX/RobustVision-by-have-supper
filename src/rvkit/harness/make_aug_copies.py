@@ -50,16 +50,23 @@ def plan_work(names, ratio, mode, seed=42):
 
 
 def process_one(item, severity, out_root, data_root=DATA_ROOT):
-    """处理一张图：corrupt 模式做坏后写图，copy 模式原样复制；标签都原样复制。"""
+    """处理一张图：corrupt 模式做坏后写图，copy 模式原样复制；标签都原样复制。
+
+    命名规则：copy 模式保留原名；corrupt 模式加前缀 aug_（如 aug_xxx.jpg）——
+    这样两种模式可以写进同一个练习盘（M1/M2 的"原图 + 做坏副本"单目录方案），
+    副本永远不会覆盖同名原图；标签同为原名 txt（做坏不移动物体，答案不变）。
+    """
     name, cname = item
     out_root = Path(out_root)
     src_img = Path(data_root) / "train" / "images" / name
 
-    dst_img = out_root / "images" / name
-    dst_img.parent.mkdir(parents=True, exist_ok=True)
-    if cname is None:                          # copy 模式：原图直拷
+    if cname is None:                          # copy 模式：原图直拷、保留原名
+        dst_img = out_root / "images" / name
+        dst_img.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src_img, dst_img)
-    else:                                      # corrupt 模式：做坏后写
+    else:                                      # corrupt 模式：做坏后写 aug_ 前缀副本
+        dst_img = out_root / "images" / f"aug_{name}"
+        dst_img.parent.mkdir(parents=True, exist_ok=True)
         img = cv2.imread(str(src_img))
         if img is None:
             raise FileNotFoundError(f"读不到原图：{src_img}")
@@ -70,20 +77,30 @@ def process_one(item, severity, out_root, data_root=DATA_ROOT):
         cv2.imwrite(str(dst_img), out)
 
     txt = Path(name).with_suffix(".txt").name
+    # 标签名跟随图像名（aug_ 前缀同步）：aug_xxx.jpg 必须配 aug_xxx.txt，
+    # 否则 Ultralytics 找不到标签、会把做坏图当成"无目标的背景图"训练
+    lbl_name = f"aug_{txt}" if cname is not None else txt
     dst_img.parent.parent.joinpath("labels").mkdir(parents=True, exist_ok=True)
     shutil.copyfile(Path(data_root) / "train" / "labels" / txt,
-                    dst_img.parent.parent / "labels" / txt)
-    return name
+                    dst_img.parent.parent / "labels" / lbl_name)
+    return dst_img.name
 
 
 def self_check(items, out_root):
-    """数量自查：images 与 labels 都应恰好等于计划张数。"""
+    """逐项自查：每个计划项的图像与标签文件都必须在位（支持多种模式写同一目录）。"""
     out_root = Path(out_root)
-    n_img = len(list((out_root / "images").glob("*")))
-    n_lbl = len(list((out_root / "labels").glob("*")))
-    print(f"自查：images={n_img} labels={n_lbl} 计划={len(items)}")
-    if n_img != len(items) or n_lbl != len(items):
-        raise RuntimeError("产物数量与计划不符，请检查上方数字")
+    missing = []
+    for name, cname in items:
+        img = out_root / "images" / (f"aug_{name}" if cname else name)
+        lbl = out_root / "labels" / (f"aug_{Path(name).with_suffix('.txt').name}"
+                                     if cname else Path(name).with_suffix(".txt").name)
+        if not img.exists():
+            missing.append(str(img))
+        if not lbl.exists():
+            missing.append(str(lbl))
+    if missing:
+        raise RuntimeError(f"缺 {len(missing)} 个产物，例如：{missing[:3]}")
+    print(f"✓ 自查通过：{len(items)} 项产物（图像 + 标签）全部在位")
 
 
 def main():

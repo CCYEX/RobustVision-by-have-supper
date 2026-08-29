@@ -1,0 +1,7 @@
+# M1 本机训练配置（4060 · 排期 v2 本机路线）
+# 与 M0 唯一的变量：train 指向 data/train_m1/images（= 11,454 原图 + ~3.4K 张 aug_ 前缀做坏副本，同一目录）。
+# 其余参数（batch 16、imgsz 640、seed 42）与 M0 完全一致——控制变量，成绩差异只归因于训练数据。
+path: D:/Coding/RobustVision/rvkit/data
+train: train_m1/images
+val: splits_train/trainval_1k_paths.txt
+names: {0: person, 1: rider, 2: car, 3: truck, 4: bus, 5: train, 6: motor, 7: bike, 8: traffic light, 9: traffic sign}

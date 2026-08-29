@@ -1,0 +1,7 @@
+# M2 旗舰本机训练配置（4060 · 排期 v2 本机路线）
+# train 指向 data/train_m2/images（= 11,454 原图 + ~4K 张 aug_ 做坏副本 + 4,000 张真实夜间/雨天，同一目录，约 19.5K 张/轮）。
+# epochs=30、patience=12（数据更多，轮数略减），其余与 M0 一致。
+path: D:/Coding/RobustVision/rvkit/data
+train: train_m2/images
+val: splits_train/trainval_1k_paths.txt
+names: {0: person, 1: rider, 2: car, 3: truck, 4: bus, 5: train, 6: motor, 7: bike, 8: traffic light, 9: traffic sign}
