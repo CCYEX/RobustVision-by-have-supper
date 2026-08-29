@@ -43,3 +43,21 @@
 - 明日 D3：生成 trainval_1k.txt + train_clear_all.txt（11,454）两份训练清单 + 本机环境 + run_s1.sh
 - GPU 累计：0 h / 6 h
 ```
+
+```
+## D4+D5 08-29（提前完成）
+- 做了：评测引擎三件套 datasets/adapter/runner + convert.py --mode bdd8coco（编号对齐 COCO）+ val8/ 双目录
+- 数字（yolo11s × 8类 × mini300）：clean_day mAP50-95=0.2277；night −22.5%；fog −39.6%；snow −17.8%；rain +6.8%（迷你集偏白天所致，全量以云端为准）
+- 修坑：Ultralytics r.box.maps 对无标注类填均值 → adapter 按 ap_class_index 过滤并返回 per_class_index
+- GPU 累计：0 h / 6 h
+```
+
+```
+## D6+D7 08-29（提前完成 → 9/2 门禁达标）
+- 做了：corruptions.py（6 种 albumentations + 手写物理散射雾）+ generate_corrupt.py（双口径 corrupt/+corrupt8/ 硬链接）+ report.py + rvkit checkup CLI
+- 决策：库版 RandomFog 视觉否决（漂浮白斑，见 fog_shootout.jpg）→ 自写大气散射模型（远浓近清）；albumentations 钉 >=1.4.24,<1.5
+- 验证：33 条测试全绿；确定性磁盘级复核（同图同坏法重新生成逐字节一致）；硬链接 inode 验证；门禁预演一条命令 4 产物 ✓（已清理）
+- 数字：最狠类 traffic light 平均 −49.1%（呼应数据卡 88.3% 小目标）
+- 明日 D8：假装外人测试 + S1 物料（configs/m0_clear_day.yaml、make_aug_copies.py、predict_cache.py）
+- GPU 累计：0 h / 6 h
+```
