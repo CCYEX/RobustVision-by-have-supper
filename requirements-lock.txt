@@ -1,3 +1,6 @@
+# requirements-lock.txt —— 本机 PuTong_P3.11.15 环境的完整版本快照（生成于 2026-08-29）
+# 用法：pip install -r requirements-lock.txt（云电脑复现用）
+# 注意：rvkit 本体不在清单里——它由 git clone 后 pip install -e . 安装
 absl-py==2.4.0
 albucore==0.0.23
 albumentations==1.4.24
@@ -37,12 +40,14 @@ opencv-python==5.0.0.93
 opencv-python-headless==5.0.0.93
 packaging @ file:///C:/miniconda3/conda-bld/packaging_1761049096285/work
 pandas==3.0.1
+pi_heif==1.4.0
 pillow==12.0.0
 pluggy==1.6.0
 polars==1.44.1
 polars-runtime-32==1.44.1
 protobuf==7.34.1
 psutil==7.2.2
+pyarrow==25.0.1
 pydantic==2.13.4
 pydantic_core==2.46.4
 Pygments==2.21.0
@@ -53,7 +58,6 @@ PyYAML==6.0.3
 regex==2026.7.19
 requests==2.34.2
 rich==15.0.0
--e git+https://github.com/CCYEX/RobustVision-by-have-supper.git@3ffd51d5d8b4ca401688a7a79cab78b01f7f80a2#egg=rvkit
 safetensors==0.8.0
 scikit-learn==1.8.0
 scipy==1.17.1

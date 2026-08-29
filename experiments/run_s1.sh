@@ -18,15 +18,20 @@ set -e
 # 把 GitHub 上的项目下载到云电脑（清单/配置/lock 文件都在里面）
 git clone https://github.com/CCYEX/RobustVision-by-have-supper.git
 cd RobustVision-by-have-supper
-# 按 requirements-lock.txt 记录的版本清单装依赖（和本机版本一模一样，避免"我这能跑你那不能跑"）
-pip install -r requirements-lock.txt
+# 装依赖。注意：本机 lock 里的 torch 是 Windows 专用包（+cu130），Linux 云端装不上；
+# 云平台镜像自带 Linux 版 torch，这里跳过 torch/torchvision、其余照 lock 安装
+grep -vE "^(torch|torchvision)==" requirements-lock.txt > /tmp/req_cloud.txt
+pip install -r /tmp/req_cloud.txt
 
 # ---------- 第1步：拿数据（约20-40分钟） ----------
 # TODO(9/4 当天填)：用你本机下载时的同一来源下载 train/val 两个包，解压成：
 #   data/train/images/  data/train/annotations/
 #   data/val/images/    data/val/annotations/
-# 数据到位后，重建 YOLO 标签（约 1 分钟，8 万个 txt）：
-python data/convert.py
+# 数据到位后做两件事：
+python data/convert.py                                     # ①重建 YOLO 标签（1 分钟，8 万个 txt）
+python -m rvkit.harness.datasets --data-root /root/autodl-tmp/data
+# ↑ ②生成带路径的训练名单 splits_train/*_paths.txt（路径要与 configs/m0_clear_day.yaml
+#   的 path 一致——云电脑数据不在 /root/autodl-tmp/data 就两边一起改）
 
 # ---------- 第2步：试跑 3 轮测速度（约15分钟） ----------
 # 目的：正式训练前先知道这台机器多快，据此决定正式跑多少轮（省钱）
@@ -44,15 +49,30 @@ yolo train model=yolo11m.pt data=configs/m0_clear_day.yaml \
 
 # ---------- 第4步：等待期的 CPU 活（重要：训练开始后，另开一个终端窗口执行！） ----------
 # 训练占着显卡，CPU 空着——正好拿来生成 M1 的"做坏图"、备好 M2 的真实图
-# TODO(D8 前)：make_aug_copies.py / predict_cache.py 写好并 push 后，取消下面两行注释
-# python -m rvkit.harness.make_aug_copies --list data/splits/train_clear_all.txt --ratio 0.3 --out train_m1/
-# python <按 m2_real_adverse.txt 把 4000 张真实夜景雨天图+标签拷到 train_m2_seed/ 的命令>
+python -m rvkit.harness.make_aug_copies --list data/splits/train_clear_all.txt --ratio 0.3 --out train_m1/
+# ↑ 抽 30%（约 3.4K 张），每张随机做一种坏 → train_m1/{images,labels}，9/6 训 M1 用
+python -m rvkit.harness.make_aug_copies --list data/splits/m2_real_adverse.txt --ratio 1.0 --mode copy --out train_m2_seed/
+# ↑ 4000 张真夜景/雨天原图+标签原样拷到 train_m2_seed/，9/8 拼 M2 练习盘用
+python -m rvkit.harness.generate_corrupt
+# ↑ 评测用的坏图库（val 前 300 张 × 7 种，10 类+8 类双口径），第 5 步考试要用
 
 # ---------- 第5步：训完立刻考试 + 存答案（约30分钟） ----------
-# 用我们自己写的评测引擎给 M0 打分，并把它的全部答案存成表格（9/9 校准免再租卡）
-# TODO(D8 前)：评测与缓存入口写好后，取消下面两行注释
-# python -m rvkit.harness.runner --model runs/m0/weights/best.pt --full --out results/m0_full.csv
-# python predict_cache.py runs/m0/weights/best.pt data/splits/test.txt cache/m0.parquet
+# 用我们自己写的评测引擎给 M0 打分（全部 13 个条件、10 类口径），并把它的
+# 全部答案存成 parquet 表格（9/9 校准免再租卡）
+# 先组"全量考试"的名单目录：6 个自然条件（test 全量）+ 7 种坏（corrupt_base 全量
+# 1,235 张，与干净参照同图配对）；GPU 上全量也就几分钟，直接出正式数字
+mkdir -p data/splits/cloud_eval
+for f in clean_day night rain snow dawn_dusk fog; do
+  cp data/splits/conditions/$f.txt data/splits/cloud_eval/
+done
+for c in low_light motion_blur gauss_noise fog rain downscale jpeg; do
+  cp data/splits/corrupt_base.txt data/splits/cloud_eval/${c}_s2.txt
+done
+rvkit checkup --model runs/m0/weights/best.pt --splits data/splits/cloud_eval/ \
+  --mode labels10 --out results/m0_full.md
+# ↑ 出 results/m0_full.{md,csv} + m0_full_perclass.csv + 热力图（10 类口径）
+python -m rvkit.harness.predict_cache runs/m0/weights/best.pt data/splits/val_all.txt cache/m0.parquet
+# ↑ calib+test 共 1 万张的答案表（9/9 校准的原料）
 
 # ---------- 第6步：回传 4 件套，然后关机 ----------
 # 用云平台的"文件下载"功能拿回这 4 样小文件（共约 100MB，不传任何图片）：

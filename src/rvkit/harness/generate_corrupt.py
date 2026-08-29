@@ -151,6 +151,14 @@ def main():
         generate(names, cname, args.severity, args.workers)
         print(f"[{cname}_s{args.severity}] {len(names)} 张完成")
 
+    # 把本次生成对应的条件名单落到 data/splits/mini/（checkup 扫描该目录时
+    # 自动把坏图条件纳入体检）；名单与实际生成的图永远同步
+    from rvkit.harness.datasets import write_names
+    mini_dir = Path(args.data_root) / "splits" / "mini"
+    for cname in todo:
+        write_names(mini_dir / f"{cname}_s{args.severity}.txt", names)
+    print(f"条件清单已更新：{mini_dir}/<坏法>_s{args.severity}.txt × {len(todo)}")
+
     self_check(names, args.severity, args.data_root, todo)
 
 

@@ -24,6 +24,7 @@ import pandas as pd
 
 from rvkit.harness import datasets
 from rvkit.harness.adapter import UltralyticsAdapter
+from rvkit.harness.corruptions import CORRUPTION_NAMES
 from rvkit.harness.report import df_to_markdown
 
 # ---- 常量 -------------------------------------------------------------------
@@ -69,23 +70,30 @@ def run_checkup(model_weights, splits_dir, mode="bdd8coco", out_stem=None,
     print(f"模型：{model_weights} | 口径：{mode} | 设备：{device} | "
           f"迷你规模：{'完整名单' if not n_mini else f'每条件前 {n_mini} 张'}")
 
-    # 第 1 步：迷你名单。n_mini>0 → 每个条件取前 n 张，写到 data/splits/mini/。
-    # 固定取前 n（名单本身已打乱），重跑完全可复现；每次重写保证与源名单同步。
+    # 第 1 步：发现名单。扫描 --splits 目录下全部 txt——自然条件（clean_day 等）
+    # 和坏图条件（low_light_s2 等）混放在一起，来多少算多少。
+    # 行序固定保证报告稳定：基准 clean_day 第一 → 其余自然条件按固定顺序 →
+    # 坏图按 CORRUPTION_NAMES × 档位顺序 → 其它（如有）按文件名。
+    found = {p.stem: p for p in sorted(splits_dir.glob("*.txt"))}
+    if BASELINE not in found:
+        raise FileNotFoundError(f"{splits_dir} 下找不到基准名单 {BASELINE}.txt")
+    corrupt_conds = [f"{c}_s{s}" for c in CORRUPTION_NAMES for s in (1, 2, 3)]
+    order = ([BASELINE]
+             + [c for c in CONDITIONS if c in found and c != BASELINE]
+             + [k for k in corrupt_conds if k in found]
+             + sorted(k for k in found
+                      if k not in {BASELINE, *CONDITIONS, *corrupt_conds}))
     lists = {}
-    for cond in CONDITIONS:
-        src = splits_dir / f"{cond}.txt"
-        if not src.exists():                       # 缺名单直接报错，别悄悄跳过
-            raise FileNotFoundError(f"找不到条件名单：{src}")
-        names = datasets.make_mini(datasets.read_names(src), n_mini or None)
+    for cond in order:
+        names = datasets.make_mini(datasets.read_names(found[cond]), n_mini or None)
         if not names:
             print(f"[提示] {cond} 名单为空，跳过")
             continue
         lists[cond] = names
         if n_mini:                                 # n_mini=0 → 用原始名单，不落盘迷你版
-            mini_path = data_root / "splits" / "mini" / f"{cond}.txt"
-            datasets.write_names(mini_path, names)
+            datasets.write_names(data_root / "splits" / "mini" / f"{cond}.txt", names)
     if BASELINE not in lists:                      # 没有基准就算不了 rel_drop
-        raise RuntimeError(f"缺少基准条件 {BASELINE}，无法计算 rel_drop")
+        raise RuntimeError(f"基准条件 {BASELINE} 名单为空，无法计算 rel_drop")
 
     # 第 2 步：模型只加载一次，六个条件共用（加载要几秒~几十秒，别重复干活）
     adapter = UltralyticsAdapter(model_weights, device=device)

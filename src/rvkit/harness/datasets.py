@@ -15,7 +15,10 @@ val8/labels/）目录里。
     make_mini(...)      从名单取前 N 张做「迷你版」（本机没大显卡，跑 300 张才等得起）
     ensure_image_mirror(...)  bdd8coco 口径专用：把图片硬链接进 val8/images
 
-本模块只提供函数、不单独运行；runner.py / 以后 的 cli.py 会 import 它。
+另有一个云端入口（D9 第 3 步用）：
+    python -m rvkit.harness.datasets --data-root /root/autodl-tmp/data
+    → 生成 splits_train/train_clear_all_paths.txt 和 trainval_1k_paths.txt
+      （带路径的训练名单，给 configs/m0_clear_day.yaml 的 train/val 指向用）
 """
 
 from __future__ import annotations
@@ -23,6 +26,9 @@ from __future__ import annotations
 import os
 import shutil
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[3]     # 仓库根（本文件在 src/rvkit/harness/ 下）
+REPO_SPLITS = REPO_ROOT / "data" / "splits"         # 随仓库走的名单（git clone 自带）
 
 # ---- 类别登记表（与 data/convert.py 各存一份，tests/test_convert.py 保证一致）--
 
@@ -180,3 +186,33 @@ def build_eval_yaml(condition, names, mode, data_root):
                          data_root)
     return make_yaml(condition, txt, MODE_CLASS_NAMES[mode], data_root,
                      gen_dir / f"{condition}.yaml")
+
+
+# ---- 云端训练名单（D9） -------------------------------------------------------
+
+def build_train_lists(data_root, out_dir=None):
+    """把两份训练名单变成带路径的 txt，供 configs/m0_clear_day.yaml 的 train/val 指向。
+
+    名单本体（train_clear_all.txt / trainval_1k.txt）随仓库走（git clone 自带），
+    路径前缀按云端数据根目录拼 → 输出 <out>/train_clear_all_paths.txt 等。
+    """
+    data_root = Path(data_root)
+    out_dir = Path(out_dir or data_root / "splits_train")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("train_clear_all.txt", "trainval_1k.txt"):
+        names = read_names(REPO_SPLITS / name)
+        make_paths_txt(names, "train/images", out_dir / name.replace(".txt", "_paths.txt"),
+                       data_root)
+        print(f"  {out_dir / name.replace('.txt', '_paths.txt')}（{len(names)} 张）")
+    return out_dir
+
+
+if __name__ == "__main__":                 # 云电脑上：python -m rvkit.harness.datasets --data-root ...
+    import argparse
+
+    ap = argparse.ArgumentParser(description="生成云端训练用的带路径名单（splits_train/*_paths.txt）")
+    ap.add_argument("--data-root", required=True,
+                    help="云端数据根目录（与 configs/m0_clear_day.yaml 的 path 一致）")
+    ap.add_argument("--out-dir", default=None, help="输出目录（默认 <data-root>/splits_train）")
+    a = ap.parse_args()
+    build_train_lists(a.data_root, a.out_dir)
