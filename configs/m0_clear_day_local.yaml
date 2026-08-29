@@ -1,0 +1,8 @@
+# M0 本机训练配置（4060 Laptop 8GB · 排期 v2 的本机路线）
+# 与云端 configs/m0_clear_day.yaml 的唯一区别：path 指向本机数据根目录。
+# train/val 是带绝对路径的名单（data/splits_train/ 下，datasets.py 已生成过），
+# 所以实际只依赖 path 这一项；batch=16 是为 8GB 显存定的——三个模型（M0/M1/M2）都必须用 16，保持一致才可比。
+path: D:/Coding/RobustVision/rvkit/data
+train: splits_train/train_clear_all_paths.txt
+val: splits_train/trainval_1k_paths.txt
+names: {0: person, 1: rider, 2: car, 3: truck, 4: bus, 5: train, 6: motor, 7: bike, 8: traffic light, 9: traffic sign}
