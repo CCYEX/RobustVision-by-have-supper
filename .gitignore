@@ -25,3 +25,6 @@ data/yolo/
 Thumbs.db
 runs/
 *.part
+data/train8/
+data/val8/
+data/gen/
