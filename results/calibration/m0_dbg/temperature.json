@@ -1,0 +1,9 @@
+{
+  "weights_tag": "m0",
+  "temperature": 3.850561811938545,
+  "nll_before": NaN,
+  "nll_after": NaN,
+  "n_calib_det": 0,
+  "n_test_det": 425697,
+  "date": "2026-08-30"
+}

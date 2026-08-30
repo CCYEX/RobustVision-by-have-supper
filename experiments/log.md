@@ -87,3 +87,16 @@
 - 状态：评测 4 件套已出（md/csv/perclass/热力图）；cache/m0.parquet 待重跑（一条命令，~8 分钟）
 - GPU 累计：本机 4.9h 训练 + 评测 ~0.5h；云预算 0/6h 未动
 ```
+
+```
+## D9(校准)+D10(案例) 08-30上午（全部非训练任务收工）
+- 做了：predict_cache 修两个 Ultralytics 列表输入坑（RAM 预解码 28GB / batch 参数不生效）→ CHUNK=8 出 cache/m0.parquet（425,697 框/万张）
+- 校准：matching.py（贪心 IoU 判卷）+ calibrate.py（温度拟合/分条件 ECE/可靠性图）
+  · 最佳 bug：for l in read_text() 逐字符迭代 → calib 集变 21 个字符 → NLL=nan；修 = splitlines()
+  · M0 数字：T=0.762（<1 略谦虚，反预期）；NLL 0.3754→0.3650；ECE 全条件 −12~29%（雪 −28.5/雨 −24.7/夜 −20.0）；mAP 逐位不变 ✓
+- 案例：plot_cases.py → 12 张夜间漏检行人（最多 6 人/张，最高把握 0.157）→ results/qualitative/
+- 文档：case_study.md RQ1/RQ3 写实（含"晨昏 +4.2%"与"夜反而更诚实"两个诚实注记）
+- 数据：train_m1 14,890 / train_m2 19,463 就绪；M1/M2 校准只需换缓存文件重跑
+- 剩余：今晚 M1 → 明晚 M2 → 阶梯表+冻结 → 写作文 → 发布（窗口 9/6–9/11，硬底线 9/14）
+- GPU 累计：本机 ~5.5h（训练 4.93 + 评测/缓存 ~0.6）；云预算 0/6h 未动
+```

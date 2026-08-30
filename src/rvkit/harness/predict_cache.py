@@ -50,14 +50,15 @@ def cache_predictions(weights, list_path, out_path, images_dir=None,
 
     model = YOLO(weights)
     rows = []
-    # 分块喂：直接传 1 万条的列表，Ultralytics 会在启动瞬间把全部图解码进内存
-    #（loaders.py 的 LoadPilAndNumpy 路径，实测 10K 张 ≈ 28GB → MemoryError）。
-    # 每批 256 张单独 predict，内存上限 ~0.7GB；stream=True 保证批内也是逐张产出。
-    CHUNK = 256
+    # 分块喂：直接传 1 万条的列表，Ultralytics 走 LoadPilAndNumpy 加载器——
+    # 坑①：启动瞬间把全部图解码进内存（10K 张 ≈ 28GB → MemoryError）；
+    # 坑②：batch 参数对该加载器不生效，整块列表 = 一个大 batch（256 张 → CUDA OOM）。
+    # → 每块 8 张（一块 = 一个 batch；本机实测 batch 16 会溢出到 Windows 共享显存，
+    #   训练时同样现象——batch=8 是这台 4060 的安全值）。
+    CHUNK = 8
     done = 0
     for i in range(0, len(paths), CHUNK):
         for r in model.predict(source=paths[i:i + CHUNK], conf=conf, imgsz=imgsz,
-                               batch=16,   # 不指定时列表输入会把整块当一个大 batch → 显存 OOM
                                device=pick_device(device), stream=True, verbose=False):
             image = Path(r.path).name
             for x1, y1, x2, y2, c, cls_id in r.boxes.data.tolist():
