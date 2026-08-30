@@ -73,3 +73,17 @@
 - 明日（白天）：全量评测 m0_full（13 条件）+ predict_cache 10K 张 → 校准原料就位 → 晚上开训 M1
 - GPU 累计：本机 4.9 h（自购整机，云预算 0/6 h 未动）
 ```
+
+```
+## D10 评测 08-30晨（M0 全量退化矩阵出炉）
+- 数字（results/m0_full.md，test 侧 13 条件，10 类口径）：
+  clean_day 0.3022（基准）｜ night −26.2% ｜ rain −9.0% ｜ snow −15.9% ｜ dawn_dusk +4.2%（略升，如实记录）
+  ｜ fog −15.2%（仅 9 张，仅供参考）｜ 低光 −11.3% ｜ 运动模糊 −26.6% ｜ 高斯噪声 −34.3%（最狠）
+  ｜ 合成雾 −2.5% ｜ 合成雨 −27.7% ｜ 低清 −7.1% ｜ JPEG −2.6%
+  最受伤的类：motor（平均 −36.0%）→ RQ1 的答案成型
+- 坑二连（predict_cache）：① 1 万条列表输入 → Ultralytics 全量预解码进内存 ≈28GB → MemoryError
+  ② 改 256 分块后仍是同 loader：整块当一个大 batch → CUDA OOM 3.75GB
+  → 修复：CHUNK=256 + predict 显式 batch=16（已改，待回跑）
+- 状态：评测 4 件套已出（md/csv/perclass/热力图）；cache/m0.parquet 待重跑（一条命令，~8 分钟）
+- GPU 累计：本机 4.9h 训练 + 评测 ~0.5h；云预算 0/6h 未动
+```

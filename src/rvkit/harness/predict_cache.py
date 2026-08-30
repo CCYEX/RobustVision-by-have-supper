@@ -50,15 +50,23 @@ def cache_predictions(weights, list_path, out_path, images_dir=None,
 
     model = YOLO(weights)
     rows = []
-    # stream=True：逐张产出结果，1 万张也不会把显存/内存撑爆
-    for r in model.predict(source=paths, conf=conf, imgsz=imgsz,
-                           device=pick_device(device), stream=True, verbose=False):
-        image = Path(r.path).name
-        for x1, y1, x2, y2, c, cls_id in r.boxes.data.tolist():
-            rows.append({"image": image, "cls_id": int(cls_id),
-                         "cls": model.names[int(cls_id)], "conf": round(c, 4),
-                         "x1": round(x1, 1), "y1": round(y1, 1),
-                         "x2": round(x2, 1), "y2": round(y2, 1)})
+    # 分块喂：直接传 1 万条的列表，Ultralytics 会在启动瞬间把全部图解码进内存
+    #（loaders.py 的 LoadPilAndNumpy 路径，实测 10K 张 ≈ 28GB → MemoryError）。
+    # 每批 256 张单独 predict，内存上限 ~0.7GB；stream=True 保证批内也是逐张产出。
+    CHUNK = 256
+    done = 0
+    for i in range(0, len(paths), CHUNK):
+        for r in model.predict(source=paths[i:i + CHUNK], conf=conf, imgsz=imgsz,
+                               batch=16,   # 不指定时列表输入会把整块当一个大 batch → 显存 OOM
+                               device=pick_device(device), stream=True, verbose=False):
+            image = Path(r.path).name
+            for x1, y1, x2, y2, c, cls_id in r.boxes.data.tolist():
+                rows.append({"image": image, "cls_id": int(cls_id),
+                             "cls": model.names[int(cls_id)], "conf": round(c, 4),
+                             "x1": round(x1, 1), "y1": round(y1, 1),
+                             "x2": round(x2, 1), "y2": round(y2, 1)})
+        done += len(paths[i:i + CHUNK])
+        print(f"  已处理 {done}/{len(paths)} 张", flush=True)
 
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
