@@ -61,3 +61,15 @@
 - 明日 D8：假装外人测试 + S1 物料（configs/m0_clear_day.yaml、make_aug_copies.py、predict_cache.py）
 - GPU 累计：0 h / 6 h
 ```
+
+```
+## D9 08-29深夜~08-30晨（提前，本机路线）
+- 做了：页面文件扩容（WinError 1455 根因：配额耗尽，三个怪现象同源）→ 重启 → train_m0.py 本机训 M0
+  · 4060 约束三件套：batch=8（三模型统一可比）/ workers=0 / cache=ram；GPU 5.6GB 稳定、利用率 99%
+- 数字：**M0 训练完成，40 轮 4.934h**；trainval_1k 上 mAP50-95=**0.311**、mAP50=0.555、P=0.717、R=0.513（预测区间 0.28~0.36 中段 ✓）
+  · 按类：car 0.503 / truck 0.469 / bus 0.465 / traffic sign 0.347 / traffic light 0.294 / person 0.292（最弱两类正是小目标占比最高的）
+- 修坑：Ultralytics 相对 project="runs" 被拼进 runs_dir → 输出嵌套 runs/detect/runs/m0；权重已挪回 runs/m0/，train_m0.py 改绝对路径（M1/M2 免踩）
+- 环境：rvkit 已 pip install -e . --no-deps 进 PuTong 环境
+- 明日（白天）：全量评测 m0_full（13 条件）+ predict_cache 10K 张 → 校准原料就位 → 晚上开训 M1
+- GPU 累计：本机 4.9 h（自购整机，云预算 0/6 h 未动）
+```
