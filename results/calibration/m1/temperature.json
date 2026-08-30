@@ -1,0 +1,9 @@
+{
+  "weights_tag": "m1",
+  "temperature": 0.7701367992718288,
+  "nll_before": 0.37694252005208406,
+  "nll_after": 0.367322134038083,
+  "n_calib_det": 125256,
+  "n_test_det": 301000,
+  "date": "2026-08-31"
+}
