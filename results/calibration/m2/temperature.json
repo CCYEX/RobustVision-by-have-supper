@@ -1,0 +1,9 @@
+{
+  "weights_tag": "m2",
+  "temperature": 0.8076030464885227,
+  "nll_before": 0.397566354267185,
+  "nll_after": 0.3911783355356215,
+  "n_calib_det": 114903,
+  "n_test_det": 276254,
+  "date": "2026-08-31"
+}

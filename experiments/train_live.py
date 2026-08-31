@@ -134,7 +134,7 @@ def run_live(name, data_cfg, epochs, resume=False):
     print(f"启动命令：{' '.join(cmd)}")
     print(f"原始输出同时写入：{log_path}")
     print("（Ctrl+C 会连训练一起中断；中断后加 --resume 从断点续训）")
-    print("⏳ 接下来 1~2 分钟无任何输出属正常（正在扫描 2 万张图的标签），之后仪表盘每秒刷新\n")
+    print("⏳正在扫描数据集，之后仪表盘每秒刷新\n")
 
     proc = subprocess.Popen(cmd, cwd=REPO_ROOT, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
