@@ -142,14 +142,16 @@ def run(weights_tag, cache_path, calib_list, labels_dir, conditions_dir, out_dir
     print("保险丝检查通过：排序逐位不变 → mAP 不变")
 
     # 4) 分条件指标（只看 test 侧：不在 calib 名单里的图）
+    # "其他(undefined)" = test 里 weather/timeofday 为 undefined 的图（冻结规则：不进命名条件），
+    # 约 1.5K 张，是一个真实的混合桶，单独成行而非混入他处。
     test = df[~df["image"].isin(calib_names)].copy()
-    test["condition"] = test["image"].map(cmap).fillna("未命名")
+    test["condition"] = test["image"].map(cmap).fillna("其他(undefined)")
     conf_after = apply_temperature(test["conf"].values, t)
     test["conf_cal"] = conf_after
 
     rows = []
     curves = {}
-    for cond in ["未命名", *sorted(set(test["condition"]) - {"未命名"})]:
+    for cond in ["其他(undefined)", *sorted(set(test["condition"]) - {"其他(undefined)"})]:
         sub = test[test["condition"] == cond]
         if len(sub) == 0:
             continue

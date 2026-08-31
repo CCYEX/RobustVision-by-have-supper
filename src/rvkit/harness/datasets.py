@@ -18,7 +18,7 @@ val8/labels/）目录里。
 另有一个云端入口（D9 第 3 步用）：
     python -m rvkit.harness.datasets --data-root /root/autodl-tmp/data
     → 生成 splits_train/train_clear_all_paths.txt 和 trainval_1k_paths.txt
-      （带路径的训练名单，给 configs/m0_clear_day.yaml 的 train/val 指向用）
+      （带路径的训练名单，给 configs/m0_local.yaml 的 train/val 指向用）
 """
 
 from __future__ import annotations
@@ -191,7 +191,7 @@ def build_eval_yaml(condition, names, mode, data_root):
 # ---- 云端训练名单（D9） -------------------------------------------------------
 
 def build_train_lists(data_root, out_dir=None):
-    """把两份训练名单变成带路径的 txt，供 configs/m0_clear_day.yaml 的 train/val 指向。
+    """把两份训练名单变成带路径的 txt，供 configs/m0_local.yaml 的 train/val 指向。
 
     名单本体（train_clear_all.txt / trainval_1k.txt）随仓库走（git clone 自带），
     路径前缀按云端数据根目录拼 → 输出 <out>/train_clear_all_paths.txt 等。
@@ -212,7 +212,7 @@ if __name__ == "__main__":                 # 云电脑上：python -m rvkit.harn
 
     ap = argparse.ArgumentParser(description="生成云端训练用的带路径名单（splits_train/*_paths.txt）")
     ap.add_argument("--data-root", required=True,
-                    help="云端数据根目录（与 configs/m0_clear_day.yaml 的 path 一致）")
+                    help="云端数据根目录（与 configs/m0_local.yaml 的 path 一致）")
     ap.add_argument("--out-dir", default=None, help="输出目录（默认 <data-root>/splits_train）")
     a = ap.parse_args()
     build_train_lists(a.data_root, a.out_dir)

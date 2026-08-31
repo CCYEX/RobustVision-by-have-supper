@@ -28,7 +28,7 @@ from pathlib import Path
 
 if __name__ == "__main__":                     # Windows spawn 模式必须有主入口保护
     parser = argparse.ArgumentParser(description="本地GPU训练（M0/M1/M2 通用）")
-    parser.add_argument("--data", default="configs/m0_clear_day_local.yaml",
+    parser.add_argument("--data", default="configs/m0_local.yaml",
                         help="数据配置 yaml（m0/m1/m2 各一份，见 configs/）")
     parser.add_argument("--name", default="m0", help="本次训练的名字（runs/<name>/）")
     parser.add_argument("--epochs", type=int, default=40, help="最大轮数（早停会提前结束）")

@@ -16,4 +16,4 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description="训练 M0 基线（实时仪表盘）")
     p.add_argument("--resume", action="store_true", help="从 runs/m0/weights/last.pt 续训")
     a = p.parse_args()
-    run_live(name="m0", data_cfg="configs/m0_clear_day_local.yaml", epochs=40, resume=a.resume)
+    run_live(name="m0", data_cfg="configs/m0_local.yaml", epochs=40, resume=a.resume)

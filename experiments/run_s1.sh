@@ -30,20 +30,20 @@ pip install -r /tmp/req_cloud.txt
 # 数据到位后做两件事：
 python data/convert.py                                     # ①重建 YOLO 标签（1 分钟，8 万个 txt）
 python -m rvkit.harness.datasets --data-root /root/autodl-tmp/data
-# ↑ ②生成带路径的训练名单 splits_train/*_paths.txt（路径要与 configs/m0_clear_day.yaml
+# ↑ ②生成带路径的训练名单 splits_train/*_paths.txt（路径要与 configs/m0_local.yaml（云端使用时把 path 改成云端数据根）
 #   的 path 一致——云电脑数据不在 /root/autodl-tmp/data 就两边一起改）
 
 # ---------- 第2步：试跑 3 轮测速度（约15分钟） ----------
 # 目的：正式训练前先知道这台机器多快，据此决定正式跑多少轮（省钱）
-# 前提：configs/m0_clear_day.yaml 需在 D8 前于本机写好并 push（手册 D8 物料清单）
-yolo train model=yolo11m.pt data=configs/m0_clear_day.yaml \
+# 前提：configs/m0_local.yaml 已入库（云端使用时把 path 改成云端数据根）
+yolo train model=yolo11m.pt data=configs/m0_local.yaml（云端使用时把 path 改成云端数据根） \
   epochs=3 imgsz=640 batch=32 amp=True device=0
 # ↑ 训练画面会滚出 "x.xx it/s"。换算：每秒处理张数 = it/s × 32
 #   ≥250 → 第3步 epochs=40；200~250 → 改 30；<200 → 训练名单减到 8000 张再测
 
 # ---------- 第3步：正式训练 M0（约60-80分钟，会停在这里很久） ----------
 # M0 = 只见过"晴天白天"的基线模型（本项目三模型阶梯的第一级）
-yolo train model=yolo11m.pt data=configs/m0_clear_day.yaml \
+yolo train model=yolo11m.pt data=configs/m0_local.yaml（云端使用时把 path 改成云端数据根） \
   epochs=40 patience=15 imgsz=640 batch=32 amp=True seed=42 \
   workers=12 device=0 project=runs name=m0
 
