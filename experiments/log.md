@@ -138,3 +138,21 @@
 - case_study 状态行更新为"全部锁定"
 - 剩余：终检（干净环境安装测试+自查四条）→ 简历/面试稿 → Release
 ```
+
+```
+## D18(终检自查) 08-31深夜
+- 修复：可靠性图空占位面板的残留虚线（对角参考线只画进真实条件面板；三图像素级验证全白）
+- 新增 docs/metrics_glossary.md：全库指标「大白话+术语」双解释词典（含电梯演讲版）
+- 终检自查四条全过：
+  · pytest 33 passed；TODO/FIXME 零残留
+  · 数字一致性审计 122/122：以 ladder.csv 为真值源核对 README/模型卡/case_study/三份体检/
+    三份校准（ECE 相对下降逐行重算、T 与 temperature.json 对账）
+  · M2 权重重跑复现：clean_day 0.2961 / night 0.2546 与阶梯表逐位一致（3,939 张现推现算）
+  · 仓库卫生：全部 md 相对链接/引用路径存在（README 3 个权重占位为发布预留）
+- release_v0.1.0/ 本地暂存（不打 tag）：3×best.pt + M0/M1 补模型卡 + ladder.csv/md
+  + demo.gif + 发布说明草稿
+- docs/interview_prep.md：9 问口语稿 + 数字速查卡 + 英文追问一句话版
+- 简历中英文 + PS 段落草稿：本地文档层（隐私考虑不入公开库）
+- 按用户指示取消：干净 venv 重装复现测试（原 GATE-1 项）
+- 剩余：用户过目调整 → 卡片⑥：tag v0.1.0 + GitHub Release 附件 + README 填下载链接
+```
