@@ -209,10 +209,9 @@ def _reliability_plot(curves, t, png_path):
     ncol = 4
     nrow = (n + ncol - 1) // ncol
     fig, axes = plt.subplots(nrow, ncol, figsize=(4 * ncol, 3.6 * nrow), squeeze=False)
-    for ax in axes.flat:
-        ax.plot([0, 1], [0, 1], "k:", lw=1, label="完美校准")
     for i, cond in enumerate(conds):
         ax = axes[i // ncol][i % ncol]
+        ax.plot([0, 1], [0, 1], "k:", lw=1, label="完美校准")   # 对角线只画进真实面板
         before, after = curves[cond]
         ax.plot([c for c, _, _ in before], [a for _, a, _ in before],
                 "o--", color="tab:red", ms=4, lw=1, label="校准前")
@@ -225,7 +224,7 @@ def _reliability_plot(curves, t, png_path):
         if i == 0:
             ax.legend(fontsize=7)
     for j in range(n, nrow * ncol):
-        axes[j // ncol][j % ncol].axis("off")
+        axes[j // ncol][j % ncol].axis("off")   # 空面板：从未画过任何线，纯空白
     fig.suptitle(f"温度缩放校准前后（T={t:.3f}）：越贴对角线越诚实", fontsize=12)
     fig.tight_layout()
     fig.savefig(png_path, dpi=130)
