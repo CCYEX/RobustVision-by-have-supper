@@ -197,6 +197,10 @@ def _reliability_plot(curves, t, png_path):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    # matplotlib 默认的 DejaVu Sans 不含中文字形（图上全是方框）——
+    # 指定 Windows 自带的中文字体，找不到时逐个回退
+    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+    plt.rcParams["axes.unicode_minus"] = False  # 修负号显示
 
     conds = list(curves)
     n = len(conds)
