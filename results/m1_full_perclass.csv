@@ -1,0 +1,127 @@
+condition,cls_id,cls,ap
+clean_day,0,person,0.3274
+clean_day,1,rider,0.2074
+clean_day,2,car,0.506
+clean_day,3,truck,0.4559
+clean_day,4,bus,0.4829
+clean_day,5,train,0.0016
+clean_day,6,motor,0.2187
+clean_day,7,bike,0.1737
+clean_day,8,traffic light,0.289
+clean_day,9,traffic sign,0.3609
+night,0,person,0.2478
+night,1,rider,0.126
+night,2,car,0.3873
+night,3,truck,0.3186
+night,4,bus,0.3639
+night,5,train,0.0
+night,6,motor,0.1256
+night,7,bike,0.1705
+night,8,traffic light,0.1426
+night,9,traffic sign,0.3241
+rain,0,person,0.2544
+rain,1,rider,0.2129
+rain,2,car,0.4628
+rain,3,truck,0.4404
+rain,4,bus,0.406
+rain,5,train,0.0
+rain,6,motor,0.3113
+rain,7,bike,0.1887
+rain,8,traffic light,0.2035
+rain,9,traffic sign,0.3289
+snow,0,person,0.3121
+snow,1,rider,0.2234
+snow,2,car,0.4699
+snow,3,truck,0.3912
+snow,4,bus,0.3809
+snow,5,train,0.002
+snow,6,motor,0.0885
+snow,7,bike,0.1643
+snow,8,traffic light,0.2044
+snow,9,traffic sign,0.3276
+dawn_dusk,0,person,0.3117
+dawn_dusk,1,rider,0.1452
+dawn_dusk,2,car,0.4865
+dawn_dusk,3,truck,0.4889
+dawn_dusk,4,bus,0.4952
+dawn_dusk,6,motor,0.0974
+dawn_dusk,7,bike,0.2303
+dawn_dusk,8,traffic light,0.2286
+dawn_dusk,9,traffic sign,0.3345
+fog,0,person,0.4468
+fog,1,rider,0.0111
+fog,2,car,0.4067
+fog,3,truck,0.396
+fog,6,motor,0.0995
+fog,8,traffic light,0.1008
+fog,9,traffic sign,0.2531
+low_light_s2,0,person,0.288
+low_light_s2,1,rider,0.1888
+low_light_s2,2,car,0.4912
+low_light_s2,3,truck,0.435
+low_light_s2,4,bus,0.4591
+low_light_s2,5,train,0.0037
+low_light_s2,6,motor,0.1648
+low_light_s2,7,bike,0.1154
+low_light_s2,8,traffic light,0.2791
+low_light_s2,9,traffic sign,0.3424
+motion_blur_s2,0,person,0.2505
+motion_blur_s2,1,rider,0.1296
+motion_blur_s2,2,car,0.4439
+motion_blur_s2,3,truck,0.3864
+motion_blur_s2,4,bus,0.4136
+motion_blur_s2,5,train,0.0023
+motion_blur_s2,6,motor,0.1417
+motion_blur_s2,7,bike,0.106
+motion_blur_s2,8,traffic light,0.2226
+motion_blur_s2,9,traffic sign,0.2796
+gauss_noise_s2,0,person,0.2672
+gauss_noise_s2,1,rider,0.1665
+gauss_noise_s2,2,car,0.4769
+gauss_noise_s2,3,truck,0.4083
+gauss_noise_s2,4,bus,0.4226
+gauss_noise_s2,5,train,0.0
+gauss_noise_s2,6,motor,0.1354
+gauss_noise_s2,7,bike,0.1185
+gauss_noise_s2,8,traffic light,0.2587
+gauss_noise_s2,9,traffic sign,0.3126
+fog_s2,0,person,0.3223
+fog_s2,1,rider,0.2131
+fog_s2,2,car,0.5032
+fog_s2,3,truck,0.4445
+fog_s2,4,bus,0.4688
+fog_s2,5,train,0.0012
+fog_s2,6,motor,0.2131
+fog_s2,7,bike,0.1637
+fog_s2,8,traffic light,0.2845
+fog_s2,9,traffic sign,0.3574
+rain_s2,0,person,0.2655
+rain_s2,1,rider,0.1719
+rain_s2,2,car,0.477
+rain_s2,3,truck,0.4083
+rain_s2,4,bus,0.4392
+rain_s2,5,train,0.0
+rain_s2,6,motor,0.1585
+rain_s2,7,bike,0.1106
+rain_s2,8,traffic light,0.2713
+rain_s2,9,traffic sign,0.328
+downscale_s2,0,person,0.3034
+downscale_s2,1,rider,0.1849
+downscale_s2,2,car,0.4845
+downscale_s2,3,truck,0.4331
+downscale_s2,4,bus,0.452
+downscale_s2,5,train,0.0013
+downscale_s2,6,motor,0.1921
+downscale_s2,7,bike,0.1578
+downscale_s2,8,traffic light,0.2701
+downscale_s2,9,traffic sign,0.3337
+jpeg_s2,0,person,0.318
+jpeg_s2,1,rider,0.2028
+jpeg_s2,2,car,0.4999
+jpeg_s2,3,truck,0.4433
+jpeg_s2,4,bus,0.468
+jpeg_s2,5,train,0.0
+jpeg_s2,6,motor,0.2164
+jpeg_s2,7,bike,0.1678
+jpeg_s2,8,traffic light,0.275
+jpeg_s2,9,traffic sign,0.345

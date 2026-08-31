@@ -31,3 +31,10 @@ data/gen/
 data/corrupt/
 data/corrupt8/
 data/splits_train/
+
+# 本机生成的训练盘与运行日志（不入库）
+data/train_m1/
+data/train_m2/
+data/train_m2_seed/
+runs_*.log
+weights/
