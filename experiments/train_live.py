@@ -42,6 +42,10 @@ PROGRESS_RE = re.compile(
     r"(\d+)%\D+?(\d+)/(\d+)\s+([\d.]+)it/s\s+([\d:]+)<([\d:]+)\s*$"
 )
 
+# ANSI 控制/颜色码（如 \x1b[K 清行）。实测 Ultralytics 的每条进度段都以其开头——
+# 不剥掉的话 PROGRESS_RE 对 2216 条真实进度行的匹配数是 0（仪表盘冻结的根因）。
+ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+
 
 def read_results(results_csv):
     """读 results.csv 全部行（dict 列表）；文件不存在/还没写行 → 空列表。"""
@@ -138,15 +142,10 @@ def run_live(name, data_cfg, epochs, resume=False):
     def handle(seg):
         """处理一个输出段（\\r 或 \\n 之间的一段）。"""
         nonlocal last_render, last_csv_mtime, best_map
-        log_f.write(seg + "\n")
-        m = PROGRESS_RE.match(seg)
-        if m is None:  # 非进度行：轮末表格 / 保存提示等，透传（过滤掉进度条碎屑）
-            s = seg.strip()
-            if s and "━" not in s and len(s) < 150:
-                print("\r" + " " * 118 + "\r" + "  │ " + s[:110], flush=True)
-            return
-        # 限频：最多每秒刷新一次仪表盘
-        if time.time() - last_render >= 1.0:
+        log_f.write(seg + "\n")                       # 原始字节照单全收进日志
+        clean = ANSI_RE.sub("", seg).strip()          # 剥控制码后再解析（否则正则全灭）
+        m = PROGRESS_RE.match(clean)
+        if m is not None and time.time() - last_render >= 1.0:   # 限频：每秒至多刷一次
             last_render = time.time()
             rows = read_results(results_csv)
             if rows and rows[-1].get("metrics/mAP50-95(B)"):
@@ -155,7 +154,11 @@ def run_live(name, data_cfg, epochs, resume=False):
                 dashboard_line(name, m, cur, f"{best_map:.4f}")
             else:
                 dashboard_line(name, m, None, None)
-        # 每轮结束的标志：results.csv 落盘了新行
+        elif m is None:  # 非进度行：轮末表格 / 保存提示等，透传（过滤掉进度条碎屑）
+            if clean and "━" not in clean and len(clean) < 150:
+                print("\r" + " " * 118 + "\r" + "  │ " + clean[:110], flush=True)
+        # 每轮结束的标志：results.csv 落盘新行 —— 放在正则分支之外，
+        # 保证即使进度行解析失败，轮末状态块也一定会触发（只依赖文件落盘）。
         try:
             mtime = results_csv.stat().st_mtime
         except OSError:
