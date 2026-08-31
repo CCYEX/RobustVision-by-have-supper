@@ -154,8 +154,9 @@ def run_live(name, data_cfg, epochs, resume=False):
                 dashboard_line(name, m, cur, f"{best_map:.4f}")
             else:
                 dashboard_line(name, m, None, None)
-        elif m is None:  # 非进度行：轮末表格 / 保存提示等，透传（过滤掉进度条碎屑）
-            if clean and "━" not in clean and len(clean) < 150:
+        elif m is None:  # 非进度行一律只进日志文件不上屏（保持"只有最后一行"的干净界面）；
+            # 唯一例外：疑似报错的行照样亮出来，避免静默失败
+            if clean and re.search(r"traceback|error|out of memory|nan", clean, re.I):
                 print("\r" + " " * 118 + "\r" + "  │ " + clean[:110], flush=True)
         # 每轮结束的标志：results.csv 落盘新行 —— 放在正则分支之外，
         # 保证即使进度行解析失败，轮末状态块也一定会触发（只依赖文件落盘）。
