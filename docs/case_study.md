@@ -1,6 +1,6 @@
 # Case Study: Object Detection Robustness under Real-World Distribution Shifts
 
-**恶劣条件下的目标检测鲁棒性：BDD100K 实证研究**（状态：RQ1/RQ3(M0) 已锁定实测数字；RQ2 待 M1/M2）
+**恶劣条件下的目标检测鲁棒性：BDD100K 实证研究**（状态：全部研究问题已锁定实测数字，2026-08-31）
 
 ## 研究问题
 
