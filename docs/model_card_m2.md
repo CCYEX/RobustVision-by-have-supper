@@ -8,7 +8,7 @@
 | 任务 | 2D 目标检测（驾驶场景） |
 | 类别（10） | person, rider, car, truck, bus, train, motor, bike, traffic light, traffic sign |
 | 输入 | 1280×720 RGB（训练/评测分辨率 imgsz=640） |
-| 训练硬件 | 单张 RTX 4060 Laptop（8GB），30 轮 × 6.47 小时 |
+| 训练 | 30 轮 |
 | 训练数据 | BDD100K train 子集（见下） |
 | 随机种子 | 42（全部数据抽样与训练） |
 

@@ -33,7 +33,7 @@
 
 一句话：**原始数据不入库是版权与体积所迫（只能重新下载）；派生数据不入库是因为重建的确定性已验证（一条命令重建，不入库不损失任何可复现性）**。
 
-## 已知数据问题（详见 experiments/log.md 与 docs/data_card.md）
+## 已知数据问题（详见 docs/data_card.md）
 
 - 标注混入多任务类别（lane / drivable area，poly2d 无 box2d）→ 转换按「类别白名单 + 含 box2d」过滤；
 - 官方类名是 motor / bike（不是 motorcycle / bicycle）；

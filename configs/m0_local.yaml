@@ -1,7 +1,6 @@
-# M0 本机训练配置（4060 Laptop 8GB · 排期 v2 的本机路线）
-# 若走云端备用路线（run_s1.sh）：把 path 改成云端数据根即可，其余不动。
+# M0 本机训练配置
 # train/val 是带绝对路径的名单（data/splits_train/ 下，datasets.py 已生成过），
-# 所以实际只依赖 path 这一项；batch=16 是为 8GB 显存定的——三个模型（M0/M1/M2）都必须用 16，保持一致才可比。
+# 实际只依赖 path 这一项；batch=8 是为 8GB 显存定的（16 会溢出到共享显存）——三个模型（M0/M1/M2）都必须用 8，保持一致才可比。
 path: D:/Coding/RobustVision/rvkit/data
 train: splits_train/train_clear_all_paths.txt
 val: splits_train/trainval_1k_paths.txt

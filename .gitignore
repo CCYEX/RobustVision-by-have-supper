@@ -38,3 +38,7 @@ data/train_m2/
 data/train_m2_seed/
 runs_*.log
 weights/
+
+# 本地保留但不入库（用户 8/31 决定下架）
+experiments/log.md
+experiments/run_s1.sh
