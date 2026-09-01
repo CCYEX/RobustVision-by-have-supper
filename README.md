@@ -38,9 +38,13 @@
 
 ## 权重下载
 
-M0 / M1 / M2 的 best.pt 将随 **Release v0.1.0** 发布（含 model card）：
+**Release [v0.1.0](https://github.com/CCYEX/RobustVision-by-have-supper/releases/tag/v0.1.0)**（含三张 model card 与完整成绩表）：
 
-- `m0_best.pt` / `m1_best.pt` / `m2_best.pt` ——（发布后在此填入链接）
+- [`m2_best.pt`](https://github.com/CCYEX/RobustVision-by-have-supper/releases/download/v0.1.0/m2_best.pt) —— **旗舰（推荐）**：昼夜/雨雪混合分布综合最优，夜间 0.2546
+- [`m1_best.pt`](https://github.com/CCYEX/RobustVision-by-have-supper/releases/download/v0.1.0/m1_best.pt) —— 合成增强版：抗像素损坏最优
+- [`m0_best.pt`](https://github.com/CCYEX/RobustVision-by-have-supper/releases/download/v0.1.0/m0_best.pt) —— 晴天基线：对照/教学用
+
+权重基于 BDD100K（研究用途许可）训练，仅供研究使用；对应说明见 `docs/model_card_m{0,1,2}.md`。
 
 ## 评测引擎 rvkit（快速上手）
 
@@ -79,6 +83,22 @@ python experiments/make_ladder.py
 ```
 
 数据口径与审计发现（天气×时段交叉表、小目标分布、训练池实测）见 [docs/data_card.md](docs/data_card.md)。
+
+## 仓库导览
+
+| 位置 | 里面有什么 | 作用 |
+| --- | --- | --- |
+| `src/rvkit/harness/` | 评测引擎核心：adapter / datasets / runner / report / corruptions / generate_corrupt / make_aug_copies / predict_cache | 对任意 Ultralytics 权重组条件考卷、算分、出报告；7 种合成损坏与 M1/M2 训练盘生成；检测答案缓存（校准的原料） |
+| `src/rvkit/calibration/` | matching / calibrate | 贪心 IoU 给检测打 0/1 标签 → 温度缩放 → 分条件 ECE + 可靠性图 |
+| `src/rvkit/cli.py` | `rvkit checkup` 命令入口 | 一条命令出完整体检报告（主表 + 热力图 + 按类分解） |
+| `data/` | 数据四件套（convert / make_splits / audit / make_train_lists）+ `splits/` 全部名单（纯文件名） | 官方标注 → YOLO 标签、分层切分、数据审计；大文件为何不入库见 [data/README.md](data/README.md) |
+| `configs/` | m0 / m1 / m2_local.yaml | 三份训练数据配置——三模型**唯一变量**所在 |
+| `experiments/` | train_m0.py（通用训练入口）+ 三个 `*_live.py` 实时仪表盘 + make_ladder / make_demo_gif / plot_cases | 训练入口与全部产物生成脚本（复现链见上一节） |
+| `docs/` | case_study（研究分析全文）、data_card、model_card ×3、metrics_glossary（指标词典）、interview_prep | 分析、口径、模型卡、指标解释 |
+| `results/` | ladder.csv/md（**主结果**）、m{0,1,2}_full*（各模型体检报告）、calibration/（校准三件套）、training/（训练曲线·混淆矩阵·PR）、figures/（热力图）、qualitative*/（夜间失败案例） | 全部数字与图的最终出处 |
+| `demo/` | demo.gif | 同帧 M0 vs M2 对比演示 |
+| `tests/` | 33 条 pytest | 标签转换 / 损坏框不变性 / 报告生成的回归测试 |
+| 根目录 | pyproject.toml、requirements-lock.txt、LICENSE | 安装定义 / 锁定依赖 / MIT |
 
 ## Non-Goals
 
